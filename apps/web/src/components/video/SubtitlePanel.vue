@@ -11,7 +11,7 @@
           </svg>
         </div>
         <div>
-          <h4 class="panel-title">Phụ đề AI Gemini 3.5 Flash-Lite</h4>
+          <h4 class="panel-title">Phụ đề AI Gemini 3.8 Flash</h4>
           <p class="panel-subtitle">Tự động nghe âm thanh, chuyển ngữ và đồng bộ thời gian chuẩn xác</p>
         </div>
       </div>
@@ -50,8 +50,8 @@
         </svg>
       </div>
       <div class="generating-text">
-        <h5>Gemini 1.5 Flash đang phân tích giọng nói & dịch thuật...</h5>
-        <p>Gemini 3.5 Flash-Lite đang nghe, chia từng câu thoại và tạo phụ đề tiếng Việt đồng bộ. Video dài có thể mất vài phút.</p>
+        <h5>Gemini 3.8 Flash đang phân tích giọng nói & dịch thuật...</h5>
+        <p>Gemini 3.8 Flash đang nghe, chia từng câu thoại và tạo phụ đề tiếng Việt đồng bộ. Video dài có thể mất vài phút.</p>
       </div>
     </div>
 
@@ -105,7 +105,7 @@
           <line x1="12" y1="8" x2="12.01" y2="8"/>
         </svg>
         <span>
-          Gemini 1.5 Flash tự động phát hiện ngôn ngữ gốc (Tiếng Trung, Anh, v.v.), nhận diện giọng đọc thoại và đồng bộ thời gian từng câu sang Tiếng Việt.
+          Gemini 3.8 Flash tự động phát hiện ngôn ngữ gốc (Tiếng Trung, Anh, v.v.), nhận diện giọng đọc thoại và đồng bộ thời gian từng câu sang Tiếng Việt.
         </span>
       </div>
     </div>
@@ -114,89 +114,112 @@
     <div v-if="hasSubtitles && !isGenerating" class="subtitles-result-area">
       <!-- AI Dubbing / Voiceover Banner -->
       <div class="dubbing-banner-card">
-        <div class="dubbing-banner-left">
-          <div class="dubbing-icon">🎙️</div>
-          <div>
-            <div class="dubbing-title-row">
-              <h5 class="dubbing-heading">Lồng tiếng AI (TTS Khớp nhịp câu nói)</h5>
-              <span v-if="hasDubbedAudio" class="dubbed-tag">Đã lồng tiếng</span>
+        <!-- Top header row: Title, Badge, Description & Quick Toggle -->
+        <div class="dubbing-banner-header">
+          <div class="dubbing-header-left">
+            <div class="dubbing-icon">🎙️</div>
+            <div class="dubbing-header-info">
+              <div class="dubbing-title-row">
+                <h5 class="dubbing-heading">Lồng tiếng AI (TTS Khớp nhịp câu nói)</h5>
+                <span v-if="hasDubbedAudio" class="dubbed-tag">Đã lồng tiếng</span>
+              </div>
+              <p class="dubbing-desc">
+                Chuyển phụ đề tiếng Việt thành giọng đọc AI và co giãn tốc độ (tempo sync) khớp chuẩn xác từng câu thoại.
+              </p>
             </div>
-            <p class="dubbing-desc">
-              Chuyển phụ đề tiếng Việt thành giọng đọc AI và co giãn tốc độ (tempo sync) khớp chuẩn xác từng câu thoại.
-            </p>
+          </div>
+
+          <div v-if="hasDubbedAudio" class="dubbing-header-toggle">
+            <button
+              class="btn-sub btn-voice-toggle"
+              :class="{ 'btn-voice-toggle--active': isPlayingDubbedAudio }"
+              @click="togglePlayDubbedAudio"
+              title="Bật/Tắt phát giọng lồng tiếng kèm video"
+            >
+              <span>{{ isPlayingDubbedAudio ? '🔊 Đang bật lồng tiếng' : '🔈 Bật lồng tiếng' }}</span>
+            </button>
           </div>
         </div>
 
-        <div class="dubbing-banner-actions">
+        <!-- Bottom toolbar row: Voice, Scope, Generate button, Download buttons -->
+        <div class="dubbing-banner-toolbar">
           <div v-if="isGeneratingDubbing" class="dubbing-loading-badge">
             <span class="dub-spinner"></span>
             <span>Đang tạo giọng đọc & căn nhịp thoại...</span>
           </div>
 
           <template v-else>
-            <!-- Voice selection & preview -->
-            <div class="voice-selector-box">
-              <span class="voice-label">Giọng đọc:</span>
-              <select v-model="selectedVoiceId" class="voice-select" title="Chọn giọng đọc AI cho video">
-                <option v-for="v in voices" :key="v.id" :value="v.id">
-                  {{ v.icon }} {{ v.name }}
-                </option>
-              </select>
-              <button
-                type="button"
-                class="btn-preview-voice"
-                :class="{ 'btn-preview-voice--active': isPlayingVoicePreview }"
-                @click="togglePreviewVoice"
-                title="Bấm để nghe thử mẫu giọng này"
-              >
-                <span v-if="isPlayingVoicePreview">⏹️ Dừng</span>
-                <span v-else>▶️ Nghe thử</span>
-              </button>
+            <!-- Controls group: Voice select + Preview + Scope -->
+            <div class="dubbing-controls-group">
+              <!-- Voice selector -->
+              <div class="voice-selector-box">
+                <span class="voice-label">Giọng đọc:</span>
+                <select v-model="selectedVoiceId" class="voice-select" title="Chọn giọng đọc AI cho video">
+                  <option v-for="v in voices" :key="v.id" :value="v.id">
+                    {{ v.icon }} {{ v.name }}
+                  </option>
+                </select>
+                <button
+                  type="button"
+                  class="btn-preview-voice"
+                  :class="{ 'btn-preview-voice--active': isPlayingVoicePreview }"
+                  @click="togglePreviewVoice"
+                  title="Bấm để nghe thử mẫu giọng này"
+                >
+                  <span v-if="isPlayingVoicePreview">⏹️ Dừng</span>
+                  <span v-else>▶️ Nghe thử</span>
+                </button>
+              </div>
+
+              <!-- Scope -->
+              <div class="dubbing-scope-select">
+                <select v-model="dubbingScope" class="scope-select">
+                  <option value="clip">Đoạn chọn ({{ formatTimeShort(currentClipStart) }} - {{ formatTimeShort(currentClipEnd) }})</option>
+                  <option value="full">Toàn bộ video ({{ formatTimeShort(totalDurationMs) }})</option>
+                </select>
+              </div>
             </div>
 
-            <div class="dubbing-scope-select">
-              <select v-model="dubbingScope" class="scope-select">
-                <option value="clip">Đoạn chọn ({{ formatTimeShort(currentClipStart) }} - {{ formatTimeShort(currentClipEnd) }})</option>
-                <option value="full">Toàn bộ video ({{ formatTimeShort(totalDurationMs) }})</option>
-              </select>
+            <!-- Action buttons group -->
+            <div class="dubbing-actions-group">
+              <button
+                class="btn-generate-dub"
+                @click="handleGenerateDubbing"
+                title="Chuyển văn bản thành giọng đọc và tự động khớp nhịp thoại"
+              >
+                <span>🎙️</span>
+                <span>{{ hasDubbedAudio ? 'Lồng tiếng lại' : 'Tạo lồng tiếng AI' }}</span>
+              </button>
+
+              <template v-if="hasDubbedAudio">
+                <button
+                  class="btn-sub btn-secondary"
+                  @click="downloadDubbedAudio"
+                  title="Tải về file MP3 lồng tiếng độc lập"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="16" x2="12" y2="3"/>
+                  </svg>
+                  <span>Tải Audio (.mp3)</span>
+                </button>
+
+                <button
+                  v-if="dubbing?.video_url"
+                  class="btn-sub btn-secondary"
+                  @click="downloadDubbedVideo"
+                  title="Tải về video đã ghép lồng tiếng (.mp4)"
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="16" x2="12" y2="3"/>
+                  </svg>
+                  <span>Tải Video (.mp4)</span>
+                </button>
+              </template>
             </div>
-
-            <button
-              class="btn-generate-dub"
-              @click="handleGenerateDubbing"
-              title="Chuyển văn bản thành giọng đọc và tự động khớp nhịp thoại"
-            >
-              <span>🎙️</span>
-              <span>{{ hasDubbedAudio ? 'Lồng tiếng lại' : 'Tạo lồng tiếng AI' }}</span>
-            </button>
-
-            <template v-if="hasDubbedAudio">
-              <button
-                class="btn-sub btn-voice-toggle"
-                :class="{ 'btn-voice-toggle--active': isPlayingDubbedAudio }"
-                @click="togglePlayDubbedAudio"
-                title="Bật/Tắt phát giọng lồng tiếng kèm video"
-              >
-                <span>{{ isPlayingDubbedAudio ? '🔊 Đang bật lồng tiếng' : '🔈 Bật lồng tiếng' }}</span>
-              </button>
-
-              <button
-                class="btn-sub btn-secondary"
-                @click="downloadDubbedAudio"
-                title="Tải về file MP3 lồng tiếng độc lập"
-              >
-                Tải Audio (.mp3)
-              </button>
-
-              <button
-                v-if="dubbing?.video_url"
-                class="btn-sub btn-secondary"
-                @click="downloadDubbedVideo"
-                title="Tải về video đã ghép lồng tiếng (.mp4)"
-              >
-                Tải Video (.mp4)
-              </button>
-            </template>
           </template>
         </div>
       </div>
@@ -411,9 +434,9 @@ const voices = computed(() => {
     return editorStore.availableVoices
   }
   return [
-    { id: 'male_deep', name: 'Nam Trầm Ấm (Review Phim)', gender: 'male', tag: 'Gợi ý', icon: '👨' },
-    { id: 'female_standard', name: 'Nữ Tiêu Chuẩn (Google)', gender: 'female', tag: 'Tự nhiên', icon: '👩' },
-    { id: 'female_young', name: 'Nữ Trẻ Trung (Vlog / Ngọt Ngào)', gender: 'female', tag: 'Ngọt ngào', icon: '👧' },
+    { id: 'male_deep', name: 'Nam Trầm Ấm AI (Gemini)', gender: 'male', tag: 'Gợi ý', icon: '👨' },
+    { id: 'female_standard', name: 'Nữ Tiêu Chuẩn AI (Gemini)', gender: 'female', tag: 'Tự nhiên', icon: '👩' },
+    { id: 'female_young', name: 'Nữ Review Phim TikTok (Gemini)', gender: 'female', tag: 'Khuyên dùng', icon: '👧' },
     { id: 'male_news', name: 'Nam Năng Động (Tin Tức / Phóng Sự)', gender: 'male', tag: 'Rõ ràng', icon: '🎙️' },
     { id: 'male_story', name: 'Nam Kể Chuyện (Đêm Khuya / Trầm)', gender: 'male', tag: 'Trầm ấm', icon: '🌙' },
     { id: 'robot', name: 'Robot AI (Công Nghệ Sci-Fi)', gender: 'robot', tag: 'Hiệu ứng', icon: '🤖' },
@@ -422,7 +445,7 @@ const voices = computed(() => {
 })
 
 const selectedVoiceId = computed({
-  get: () => editorStore.selectedVoiceId || 'male_deep',
+  get: () => editorStore.selectedVoiceId || 'female_young',
   set: (val: string) => editorStore.setSelectedVoice(val)
 })
 
@@ -1213,38 +1236,58 @@ watch(
 /* Dubbing Banner */
 .dubbing-banner-card {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  padding: 12px 16px;
-  border-radius: 8px;
-  background: linear-gradient(135deg, rgba(139, 92, 246, 0.06) 0%, rgba(59, 130, 246, 0.06) 100%);
-  border: 1px solid rgba(139, 92, 246, 0.2);
-  margin-bottom: 12px;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.05) 0%, rgba(59, 130, 246, 0.05) 100%);
+  border: 1px solid rgba(139, 92, 246, 0.22);
+  margin-bottom: 14px;
+  box-shadow: 0 1px 3px rgba(139, 92, 246, 0.06);
 }
 
-.dubbing-banner-left {
+.dubbing-banner-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.dubbing-header-left {
+  display: flex;
+  align-items: flex-start;
   gap: 12px;
+  min-width: 260px;
+  flex: 1;
 }
 
 .dubbing-icon {
-  font-size: 24px;
+  font-size: 22px;
+  line-height: 1.1;
   flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.dubbing-header-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 .dubbing-title-row {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .dubbing-heading {
-  font-size: 13px;
+  font-size: 13.5px;
   font-weight: 700;
   color: #4C1D95;
   margin: 0;
+  white-space: nowrap;
 }
 
 .dubbed-tag {
@@ -1252,29 +1295,51 @@ watch(
   color: #FFFFFF;
   font-size: 10px;
   font-weight: 700;
-  padding: 1px 6px;
+  padding: 2px 7px;
   border-radius: 10px;
   text-transform: uppercase;
   letter-spacing: 0.3px;
+  white-space: nowrap;
 }
 
 .dubbing-desc {
-  font-size: 11.5px;
-  color: #6B7280;
-  margin: 2px 0 0 0;
-  line-height: 1.4;
+  font-size: 12px;
+  color: #64748B;
+  margin: 0;
+  line-height: 1.45;
 }
 
-.dubbing-banner-actions {
+.dubbing-header-toggle {
+  flex-shrink: 0;
+}
+
+.dubbing-banner-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding-top: 10px;
+  border-top: 1px dashed rgba(139, 92, 246, 0.18);
+}
+
+.dubbing-controls-group {
   display: flex;
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
-  flex-shrink: 0;
+}
+
+.dubbing-actions-group {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
 }
 
 .voice-selector-box {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 6px;
   background: #FFFFFF;
@@ -1285,8 +1350,8 @@ watch(
 }
 
 .voice-label {
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 600;
   color: #6D28D9;
   white-space: nowrap;
 }
@@ -1301,7 +1366,7 @@ watch(
   color: #1E293B;
   outline: none;
   cursor: pointer;
-  max-width: 200px;
+  max-width: 210px;
 }
 
 .voice-select:hover, .voice-select:focus {
@@ -1358,13 +1423,14 @@ watch(
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.3);
+  box-shadow: 0 2px 6px rgba(139, 92, 246, 0.25);
   transition: transform 0.15s, box-shadow 0.15s;
+  white-space: nowrap;
 }
 
 .btn-generate-dub:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4);
+  box-shadow: 0 4px 10px rgba(139, 92, 246, 0.35);
 }
 
 .btn-voice-toggle {
@@ -1372,6 +1438,7 @@ watch(
   color: #047857;
   background: rgba(16, 185, 129, 0.08);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .btn-voice-toggle--active {
