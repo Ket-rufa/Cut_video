@@ -1,0 +1,65 @@
+# Environment variables and secrets
+.env
+.env.*
+!.env.example
+
+# Cookies and credentials
+*cookie*
+*cookies*
+douyin cookie/
+douyin_cookies.txt
+
+# Databases
+*.db
+*.sqlite
+*.sqlite3
+
+# Binaries and executables
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+bin/
+apps/api/bin/
+apps/api/server.exe
+
+# Media files
+*.mp4
+*.mp3
+*.wav
+*.mkv
+*.webm
+*.avi
+*.mov
+
+# Storage directories
+storage/temp/*
+storage/source/*
+storage/exports/*
+storage/thumbnails/*
+apps/api/storage/*
+!storage/**/.gitkeep
+!apps/api/storage/**/.gitkeep
+
+# Build artifacts & dependencies
+node_modules/
+dist/
+vendor/
+coverage.out
+*.test
+
+# Logs and temporary files
+*.log
+/tmp/
+/temp/
+
+# IDE and Assistant caches
+.claude/
+.gemini/
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
