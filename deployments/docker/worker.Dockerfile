@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:alpine AS builder
 WORKDIR /build
 COPY workers/media-worker/go.mod workers/media-worker/go.sum ./
 RUN go mod download

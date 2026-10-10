@@ -6,3 +6,12 @@ dist
 storage
 tmp
 temp
+apps/api/storage
+apps/api/bin
+*.mp4
+*.mp3
+*.exe
+*.exe~
+*.db
+douyin cookie
+douyin_cookies.txt
